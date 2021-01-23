@@ -17,5 +17,6 @@ public class Photo {
     @Id
     private String id;
     private Binary image;
+
     public static Photo INVALID = new Photo("1", new Binary("photo".getBytes()));
 }

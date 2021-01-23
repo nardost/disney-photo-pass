@@ -37,7 +37,7 @@ public class ReactivePhotoService {
         final String id = UUID.randomUUID().toString();
         final Binary image = new Binary(BsonBinarySubType.BINARY, file.getBytes());
         final Photo photo = new Photo(id, image);
-        log.info("Image saved: " + id);
+        log.info("Saving image with id " + id);
         return repository.save(photo);
     }
 }
