@@ -3,10 +3,16 @@ package edu.depaul.ntessema.disney.media.service;
 import edu.depaul.ntessema.disney.media.model.Photo;
 import edu.depaul.ntessema.disney.media.repository.ReactivePhotoRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.BsonBinarySubType;
+import org.bson.types.Binary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -27,7 +33,11 @@ public class ReactivePhotoService {
         return repository.findById(id);
     }
 
-    public void save(Photo photo) {
-        repository.save(photo);
+    public Mono<Photo> savePhoto(MultipartFile file) throws IOException {
+        final String id = UUID.randomUUID().toString();
+        final Binary image = new Binary(BsonBinarySubType.BINARY, file.getBytes());
+        final Photo photo = new Photo(id, image);
+        log.info("Image saved: " + id);
+        return repository.save(photo);
     }
 }

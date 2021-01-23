@@ -10,3 +10,6 @@ spring:
       database: ${MONGODB_DISNEY_MEDIA_DB}
       username: ${MONGODB_DISNEY_USERNAME}
       password: ${MONGODB_DISNEY_PASSWORD}
+  devtools:
+    restart:
+      enabled: true
