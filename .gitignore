@@ -6,6 +6,9 @@ build/
 !**/src/test/**/build/
 .DS_Store
 
+### Credentials
+.env.sh
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
