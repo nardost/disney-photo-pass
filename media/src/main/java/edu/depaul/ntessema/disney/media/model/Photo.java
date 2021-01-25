@@ -16,7 +16,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Photo {
     @Id
     private String id;
+    private String mimeType;
     private Binary image;
 
-    public static Photo INVALID = new Photo("1", new Binary("photo".getBytes()));
+    public static Photo INVALID = new Photo("1", "image/png", new Binary("photo".getBytes()));
 }
