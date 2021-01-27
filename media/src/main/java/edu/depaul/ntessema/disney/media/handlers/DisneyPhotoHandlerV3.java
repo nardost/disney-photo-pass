@@ -18,10 +18,11 @@ public class DisneyPhotoHandlerV3 {
     private final DisneyPhotoService photoService;
 
     public Mono<ServerResponse> getImage(ServerRequest request) {
-        return photoService.getPhoto(request.pathVariable("id"))
+        Mono<byte[]> photo = photoService.getPhoto(request.pathVariable("id"))
                 .map(Photo::getImage)
-                .map(Binary::getData)
-                .flatMap(bytes -> ServerResponse.ok().bodyValue(bytes));
+                .map(Binary::getData);
+
+        return ServerResponse.ok().contentType(MediaType.IMAGE_JPEG).body(photo, byte[].class);
     }
 
     public Mono<ServerResponse> getImageIds(ServerRequest request) {
