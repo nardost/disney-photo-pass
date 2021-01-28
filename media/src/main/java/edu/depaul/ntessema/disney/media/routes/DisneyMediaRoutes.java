@@ -12,6 +12,9 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
+/**
+ * Bean that defines functional endpoints.
+ */
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
