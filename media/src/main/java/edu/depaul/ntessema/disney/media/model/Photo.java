@@ -8,6 +8,9 @@ import org.bson.types.Binary;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.sql.Timestamp;
+import java.util.Date;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -19,4 +22,5 @@ public class Photo {
     private String mimeType;
     private Binary image;
     private String md5Hash;
+    private Date timestamp;
 }

@@ -22,7 +22,7 @@ public class DisneyMediaRoutes {
     @Bean
     public RouterFunction<ServerResponse> routes() {
         return route()
-                .GET("/v1/photo/list", accept(MediaType.APPLICATION_JSON), photoHandler::listImages)
+                .GET("/v1/photo/list", accept(MediaType.APPLICATION_JSON), photoHandler::listHashValues)
                 .POST("/v1/photo/save", accept(MediaType.MULTIPART_FORM_DATA), photoHandler::saveImage)
                 .GET("/v1/photo/{id}", accept(MediaType.APPLICATION_JSON), photoHandler::getImage)
                 .build();

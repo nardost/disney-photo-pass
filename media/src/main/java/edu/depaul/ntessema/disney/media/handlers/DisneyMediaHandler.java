@@ -6,6 +6,7 @@ import edu.depaul.ntessema.disney.media.service.DisneyMediaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bson.BsonBinarySubType;
+import org.bson.types.BSONTimestamp;
 import org.bson.types.Binary;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -20,7 +21,12 @@ import reactor.core.publisher.Mono;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Base64;
+import java.util.Date;
 import java.util.UUID;
 
 @Slf4j
@@ -38,7 +44,7 @@ public class DisneyMediaHandler {
         return ServerResponse.ok().contentType(MediaType.IMAGE_JPEG).body(photo, byte[].class);
     }
 
-    public Mono<ServerResponse> listImages(ServerRequest request) {
+    public Mono<ServerResponse> listHashValues(ServerRequest request) {
         Flux<Hash> hashes = photoService.listPhotos().map(Hash::new);
         return ServerResponse.ok().contentType(MediaType.APPLICATION_NDJSON).body(hashes, Hash.class);
     }
@@ -55,10 +61,12 @@ public class DisneyMediaHandler {
             buffer.read(bytes);
             DataBufferUtils.release(buffer);
 
-            final String id = UUID.randomUUID().toString();
-            final String mimeType = "image/jpeg";
-            final Binary binary = new Binary(BsonBinarySubType.BINARY, bytes);
-            final Photo photo = new Photo(id, mimeType, binary, getMD5Hash(bytes));
+            final Photo photo = new Photo(
+                    UUID.randomUUID().toString(),
+                    "image/jpeg",
+                    new Binary(BsonBinarySubType.BINARY, bytes),
+                    getMD5Hash(bytes),
+                    new Date());
 
             return ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
@@ -66,7 +74,7 @@ public class DisneyMediaHandler {
         });
     }
 
-    private String getMD5Hash(byte[] bytes) {
+    public static String getMD5Hash(byte[] bytes) {
         final String HASHING_ALGORITHM = "MD5";
         try {
             final byte[] digest = MessageDigest.getInstance(HASHING_ALGORITHM).digest(bytes);
