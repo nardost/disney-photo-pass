@@ -17,9 +17,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 @RequiredArgsConstructor
@@ -42,19 +40,24 @@ public class DisneyMediaHandler {
 
     public Mono<ServerResponse> saveImage(ServerRequest request) {
 
-        Flux<DataBuffer> dataBufferFlux = request.body(BodyExtractors.toParts())
+        Mono<DataBuffer> dataBuffer = request.body(BodyExtractors.toParts())
                 .filter(part -> part.name().equals("file"))
-                .flatMap(Part::content);
+                .flatMap(Part::content)
+                .elementAt(0);
 
-        return dataBufferFlux.flatMap(buffer -> {
+        return dataBuffer.flatMap(buffer -> {
             byte[] bytes = new byte[buffer.readableByteCount()];
             buffer.read(bytes);
             DataBufferUtils.release(buffer);
-            final String id = UUID.randomUUID().toString();
-            final String mimeType = "image/jpeg";
-            final Binary binaryImage = new Binary(BsonBinarySubType.BINARY, bytes);
-            Mono<Photo> saved = photoService.savePhoto(new Photo(id, mimeType, binaryImage));
-            return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(saved, Photo.class);
-        }).elementAt(0);
+
+            final Photo photo = new Photo(
+                    UUID.randomUUID().toString(),
+                    "image/jpeg",
+                    new Binary(BsonBinarySubType.BINARY, bytes));
+
+            return ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(photoService.savePhoto(photo), Photo.class);
+        });
     }
 }
