@@ -18,6 +18,5 @@ public class Photo {
     private String id;
     private String mimeType;
     private Binary image;
-
-    public static Photo INVALID = new Photo("1", "image/png", new Binary("photo".getBytes()));
+    private String md5Hash;
 }
