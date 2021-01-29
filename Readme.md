@@ -5,41 +5,21 @@ The PhotoPass system is a photography service offered at Disney theme parks that
 ## Utility Tree
 
 | Quality Attribute | Quality Attribute Refinement | Architecturally Significant Requirement (ASR) | Importance | Difficulty |
-| --- | --- | --- | --- | --- |
-|
-| |
+| ----------------- | ---------------------------- | --------------------------------------------- | ---------- | ---------- |
 | Performance | Response time | At the busiest hour of the park, a photographer can link a picture to the visitor account in less than 1 second after the picture is taken. | H | H |
-|
-| |
-| At the busiest hour of the park, a photographer can proceed to take the next picture in less than 1 second after the previous picture is linked to visitor&#39;s account. | H | H |
-|
-| |
+| | | At the busiest hour of the park, a photographer can proceed to take the next picture in less than 1 second after the previous picture is linked to visitor&#39;s account. | H | H |
 | Availability | Down time | The system recovers from crash in less than 1 second by swapping in a hot spare. | H | H |
-|
-| |
-| The system is available for 24/7 web-based account access by visitors. | M | M |
-|
-| |
-| Degradation | The system degrades to storing pictures and their associated account information locally temporarily in the event that either of the account or media service fails. | H | M |
-|
-| |
+| | | The system is available for 24/7 web-based account access by visitors. | M | M |
+| | Degradation | The system degrades to storing pictures and their associated account information locally temporarily in the event that either of the account or media service fails. | H | M |
 | Security | Confidentiality | The system does not allow pictures of one visitor to be accessed by another visitor. | H | M |
-|
-| |
-| Integrity | The system does not authorize visitors to delete their own pictures. | H | M |
-|
-| |
+| | Integrity | The system does not authorize visitors to delete their own pictures. | H | M |
 | Mobility | Operating in a disconnected mode | The system on a _PhotoPass_ camera can store the last 100 pictures locally so that, even if service crashes, no photo is lost. | H | H |
-|
-| |
-| The system on a _PhotoPass_ camera can store the last 100 picture IDs and the associated visitor IDs locally so that, even if service crashes, no photo is left unlinked to the visitors&#39; accounts. | H | L |
-|
-| |
+| | | The system on a _PhotoPass_ camera can store the last 100 picture IDs and the associated visitor IDs locally so that, even if service crashes, no photo is left unlinked to the visitors&#39; accounts. | H | L |
 | Usability | Learning system features | A visitor can easily navigate the system to browse the gallery and select pictures for purchase without having to consult any how-to manual. | M | L |
 
 _Table 1. Utility tree for the PhotoPass system._
 
-![Component Diagram of the PhotoPass System](docs/component-diagram.png)**3. UML Diagram of the PhotoPass System (Component Diagram)**
+![Component Diagram of the PhotoPass System](docs/component-diagram.png)
 
 _Figure 1. Component diagram of the PhotoPass system (designed with Visual Paradigm Community Edition)._
 
