@@ -41,7 +41,7 @@ public class DisneyMediaService {
      */
     public Mono<Photo> savePhoto(Photo photo) {
         return repository.existsByMd5Hash(photo.getMd5Hash())
-                .flatMap(exists -> 
+                .flatMap(exists ->
                         !exists ? repository.save(photo)
                                 : repository.findFirstByMd5Hash(photo.getMd5Hash()));
     }

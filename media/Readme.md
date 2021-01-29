@@ -7,7 +7,7 @@ The endpoints are built on the reactive web stack.
 METHOD | ENDPOINT | DESCRIPTION
 ------ | -------- | -----------
 ```GET``` | ```/v1/photo/list``` | streams MD5 hashes of all photos
-```GET``` | ```/v1/photo/{id}``` | retrieves a single photo
+```GET``` | ```/v1/photo/:id``` | retrieves a single photo
 ```POST``` | ```/v1/photo/save``` | saves a picture file.
 
 
