@@ -10,7 +10,7 @@ import org.bson.types.Binary;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
-import org.springframework.http.codec.multipart.Part;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyExtractors;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -22,6 +22,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -32,6 +33,14 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DisneyMediaHandler {
 
+    /**
+     * Define names of all request/form parameters here.
+     */
+    private final static String FILE_FIELD_NAME = "file";
+
+    /**
+     * Spring will Autowire (Constructor injection)...
+     */
     private final DisneyMediaService photoService;
 
     /**
@@ -40,11 +49,22 @@ public class DisneyMediaHandler {
      * @return Mono of ServerResponse that wraps the bytes of the image.
      */
     public Mono<ServerResponse> getImage(ServerRequest request) {
-        Mono<byte[]> photo = photoService.getPhoto(request.pathVariable("id"))
-                .map(Photo::getImage)
-                .map(Binary::getData);
 
-        return ServerResponse.ok().contentType(MediaType.IMAGE_JPEG).body(photo, byte[].class);
+        /*
+         * This won't be helpful in extracting mimeType or other Photo properties.
+         * return ServerResponse.ok().contentType("image/jpeg").body(bytes, byte[].class)
+         */
+
+        return photoService.getPhoto(request.pathVariable("id"))
+                .flatMap(photo -> {
+                    // Extract the Photo properties & build response
+                    final String mimeType = photo.getMimeType();
+                    final Mono<byte[]> bytes = Mono.just(photo.getImage().getData());
+
+                    return ServerResponse.ok()
+                            .contentType(MediaType.valueOf(mimeType))
+                            .body(bytes, byte[].class);
+                });
     }
 
     /**
@@ -65,26 +85,42 @@ public class DisneyMediaHandler {
      */
     public Mono<ServerResponse> saveImage(ServerRequest request) {
 
-        final Mono<DataBuffer> dataBuffer = request.body(BodyExtractors.toParts())
-                .filter(part -> part.name().equals("file"))
-                .flatMap(Part::content)
-                .elementAt(0);
+        /*
+         * Incoming files larger than 256K are split into a flux of 1K sized
+         * DataBuffer chunks. Why?
+         * The series of DataBuffer chunks in the Flux have to be merged into
+         * one DataBuffer with DataBufferUtils::join to get the uploaded file
+         * in one piece (the Flux is transformed into a Mono).
+         *
+         * I made the mistake of getting the first element of the flux with elementAt(0) or next()
+         * and wasted hours trying to solve why files larger than 256K were being saved as
+         * 1K sized files which show as blank images when retrieved with browser/Postman. It worked
+         * for files smaller than 256K as they were not split into a flux of 1K chunks.
+         */
+        final StringBuilder mimeType = new StringBuilder();
+        final Mono<DataBuffer> dataBuffer = DataBufferUtils.join(request.body(BodyExtractors.toParts())
+                .filter(part -> part instanceof FilePart)
+                .filter(part -> part.name().equals(FILE_FIELD_NAME))
+                .cast(FilePart.class)
+                .map(filePart -> {
+                    mimeType.append(Objects.requireNonNullElse(filePart.headers().getContentType(), MediaType.IMAGE_JPEG).toString());
+                    return filePart;
+                })
+                .flatMap(FilePart::content)
+        );
 
         return dataBuffer.flatMap(buffer -> {
             final byte[] bytes = new byte[buffer.readableByteCount()];
-            /*
-             * Read bytes and release the buffer.
-             * 1) https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/buffer/DataBuffer.html
-             * 2) https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/buffer/DataBufferUtils.html#release-org.springframework.core.io.buffer.DataBuffer-
-             */
+
+            // DataBuffer has to be released
             DataBufferUtils.release(buffer.read(bytes));
 
             final Photo photo = new Photo(
                     UUID.randomUUID().toString(),
-                    "image/jpeg",
+                    mimeType.toString(),
                     new Binary(BsonBinarySubType.BINARY, bytes),
                     getMD5Hash(bytes),
-                    new Date());
+                    new Date()); //TODO: Investigate why Timestamp causes problems (MongoConverter problems...)
 
             return ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
