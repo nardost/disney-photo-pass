@@ -42,6 +42,7 @@ public class DisneyMediaHandler {
      * Spring will Autowire (Constructor injection)...
      */
     private final DisneyMediaService photoService;
+    private final DisneyMediaErrorHandlers errorHandlers;
 
     /**
      * Retrieves a Photo.
@@ -54,7 +55,6 @@ public class DisneyMediaHandler {
          * This won't be helpful in extracting mimeType or other Photo properties.
          * return ServerResponse.ok().contentType("image/jpeg").body(bytes, byte[].class)
          */
-
         return photoService.getPhoto(request.pathVariable("id"))
                 .flatMap(photo -> {
                     // Extract the Photo properties & build response
@@ -64,7 +64,7 @@ public class DisneyMediaHandler {
                     return ServerResponse.ok()
                             .contentType(MediaType.valueOf(mimeType))
                             .body(bytes, byte[].class);
-                });
+                }).switchIfEmpty(errorHandlers.handleNotFound(request));
     }
 
     /**
@@ -124,7 +124,8 @@ public class DisneyMediaHandler {
 
             return ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(photoService.savePhoto(photo).map(Hash::new), Hash.class);
+                    .body(photoService.savePhoto(photo).map(Hash::new), Hash.class)
+                    .switchIfEmpty(ServerResponse.notFound().build());
         });
     }
 
