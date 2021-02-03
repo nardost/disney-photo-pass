@@ -113,7 +113,11 @@ public class DisneyMediaRequestHandler {
         return dataBuffer.flatMap(buffer -> {
             final byte[] bytes = new byte[buffer.readableByteCount()];
 
-            // DataBuffer has to be released
+            /*
+             * On some servers like Netty, byte buffers are pooled and reference
+             * counted, and must be released when consumed to avoid memory leaks.
+             * https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html#webflux-websocket-databuffer
+             */
             DataBufferUtils.release(buffer.read(bytes));
 
             final Photo photo = new Photo(
