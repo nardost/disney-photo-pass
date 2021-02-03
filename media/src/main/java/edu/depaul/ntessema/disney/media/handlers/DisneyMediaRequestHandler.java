@@ -113,14 +113,18 @@ public class DisneyMediaRequestHandler {
         return dataBuffer.flatMap(buffer -> {
             final byte[] bytes = new byte[buffer.readableByteCount()];
 
-            // DataBuffer has to be released
+            /*
+             * On some servers like Netty, byte buffers are pooled and reference
+             * counted, and must be released when consumed to avoid memory leaks.
+             * https://docs.spring.io/spring-framework/docs/current/reference/html/web-reactive.html#webflux-websocket-databuffer
+             */
             DataBufferUtils.release(buffer.read(bytes));
 
             final Photo photo = new Photo(
-                    UUID.randomUUID().toString(),
+                    UUID.randomUUID().toString().replace("-", ""),
                     mimeType.toString(),
                     new Binary(BsonBinarySubType.BINARY, bytes),
-                    getMD5Hash(bytes),
+                    getMessageDigest(bytes, Photo.HASHING_ALGORITHM),
                     new Date()); //TODO: Investigate why Timestamp causes problems (MongoConverter problems...)
 
             return ServerResponse.ok()
@@ -135,13 +139,12 @@ public class DisneyMediaRequestHandler {
      * @param bytes the array of bytes of the image
      * @return Base64 encoded md5 hash
      */
-    private String getMD5Hash(byte[] bytes) {
-        final String HASHING_ALGORITHM = "MD5";
+    private String getMessageDigest(byte[] bytes, final String hashingAlgorithm) {
         try {
-            final byte[] digest = MessageDigest.getInstance(HASHING_ALGORITHM).digest(bytes);
+            final byte[] digest = MessageDigest.getInstance(hashingAlgorithm).digest(bytes);
             return Base64.getEncoder().encodeToString(digest);
         } catch (NoSuchAlgorithmException ignored) {
-            log.error("Unknown hashing algorithm: " + HASHING_ALGORITHM);
+            log.error("Unknown hashing algorithm: " + hashingAlgorithm);
             return "";
         }
     }
