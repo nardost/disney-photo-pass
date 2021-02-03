@@ -9,6 +9,7 @@ import org.bson.BsonBinarySubType;
 import org.bson.types.Binary;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Component;
@@ -31,7 +32,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class DisneyMediaHandler {
+public class DisneyMediaRequestHandler {
 
     /**
      * Define names of all request/form parameters here.
@@ -42,7 +43,7 @@ public class DisneyMediaHandler {
      * Spring will Autowire (Constructor injection)...
      */
     private final DisneyMediaService photoService;
-    private final DisneyMediaErrorHandlers errorHandlers;
+    private final DisneyMediaErrorHandler errorHandler;
 
     /**
      * Retrieves a Photo.
@@ -64,7 +65,7 @@ public class DisneyMediaHandler {
                     return ServerResponse.ok()
                             .contentType(MediaType.valueOf(mimeType))
                             .body(bytes, byte[].class);
-                }).switchIfEmpty(errorHandlers.handleNotFound(request));
+                }).switchIfEmpty(errorHandler.handleHttpError(request, HttpStatus.NOT_FOUND));
     }
 
     /**
@@ -125,7 +126,7 @@ public class DisneyMediaHandler {
             return ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(photoService.savePhoto(photo).map(Hash::new), Hash.class)
-                    .switchIfEmpty(ServerResponse.notFound().build());
+                    .switchIfEmpty(errorHandler.handleHttpError(request, HttpStatus.NOT_FOUND));
         });
     }
 

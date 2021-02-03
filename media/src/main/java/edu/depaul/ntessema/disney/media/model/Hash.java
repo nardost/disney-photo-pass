@@ -1,5 +1,6 @@
 package edu.depaul.ntessema.disney.media.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -9,8 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 public class Hash {
 
-    private final String imageId;
-    private final String md5Hash;
+    @JsonProperty("image_id") private final String imageId;
+    @JsonProperty("md5_hash") private final String md5Hash;
 
     public Hash(Photo photo) {
         this.imageId = photo.getId();

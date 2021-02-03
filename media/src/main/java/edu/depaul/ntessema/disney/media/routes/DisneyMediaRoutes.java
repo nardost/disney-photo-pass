@@ -1,6 +1,6 @@
 package edu.depaul.ntessema.disney.media.routes;
 
-import edu.depaul.ntessema.disney.media.handlers.DisneyMediaHandler;
+import edu.depaul.ntessema.disney.media.handlers.DisneyMediaRequestHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +20,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 @Slf4j
 public class DisneyMediaRoutes {
 
-    private final DisneyMediaHandler photoHandler;
+    private final DisneyMediaRequestHandler photoHandler;
 
     @Bean
     public RouterFunction<ServerResponse> routes() {
