@@ -32,7 +32,7 @@ public class DisneyMediaErrorHandler {
                 status.getReasonPhrase(),
                 null,
                 request.path(),
-                null,
+                request.headers().firstHeader("x-request-id"),
                 Timestamp.from(Instant.now()).toString());
 
         return ServerResponse.status(status).body(Mono.just(error), HttpError.class);

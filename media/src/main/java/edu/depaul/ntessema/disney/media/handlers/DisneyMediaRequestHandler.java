@@ -117,7 +117,7 @@ public class DisneyMediaRequestHandler {
             DataBufferUtils.release(buffer.read(bytes));
 
             final Photo photo = new Photo(
-                    UUID.randomUUID().toString(),
+                    UUID.randomUUID().toString().replace("-", ""),
                     mimeType.toString(),
                     new Binary(BsonBinarySubType.BINARY, bytes),
                     getMessageDigest(bytes, Photo.HASHING_ALGORITHM),
