@@ -1,5 +1,6 @@
 package edu.depaul.ntessema.disney.media.filters;
 
+import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -14,14 +15,22 @@ import java.util.UUID;
  */
 
 @Component
-@Order(-2)
+@Order(2)
 public class RequestIdInserterFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        final String requestId = getRequestId();
         exchange.getRequest()
                 .mutate()
-                .header("x-request-id", getRequestId())
+                .header("x-request-id", requestId)
                 .build();
+        /*
+         * MDC - Mapped Diagnostic Context for Slf4j
+         * Useful to filter log entries by requestId.
+         * Make sure to send the requestId within error responses
+         * so that the client can refer to failed requests by their id.
+         */
+        MDC.put("requestId", requestId);
         return chain.filter(exchange);
     }
 

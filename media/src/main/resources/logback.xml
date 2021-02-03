@@ -2,7 +2,7 @@
 <configuration debug="true">
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%yellow(%d{ISO8601, UTC}) %highlight(%-5level) - %green(%logger{36}) - %highlight(%msg) %n</pattern>
+            <pattern>%yellow(%d{ISO8601, UTC}) - requestId=%X{requestId} - %magenta(%t) - %green(%logger{36}) - %highlight(%-5level) - %msg %n</pattern>
         </encoder>
     </appender>
     <logger name="disney-photo-pass" />
@@ -10,3 +10,9 @@
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>
+<!-- Available Color Conversion Words
+    "%black", "%red", "%green","%yellow","%blue",
+    "%magenta","%cyan", "%white", "%gray", "%boldRed",
+    "%boldGreen", "%boldYellow", "%boldBlue", "%boldMagenta"
+    "%boldCyan", "%boldWhite", "%highlight"
+-->
