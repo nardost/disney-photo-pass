@@ -120,7 +120,7 @@ public class DisneyMediaRequestHandler {
                     UUID.randomUUID().toString(),
                     mimeType.toString(),
                     new Binary(BsonBinarySubType.BINARY, bytes),
-                    getMD5Hash(bytes),
+                    getMessageDigest(bytes, Photo.HASHING_ALGORITHM),
                     new Date()); //TODO: Investigate why Timestamp causes problems (MongoConverter problems...)
 
             return ServerResponse.ok()
@@ -135,13 +135,12 @@ public class DisneyMediaRequestHandler {
      * @param bytes the array of bytes of the image
      * @return Base64 encoded md5 hash
      */
-    private String getMD5Hash(byte[] bytes) {
-        final String HASHING_ALGORITHM = "MD5";
+    private String getMessageDigest(byte[] bytes, final String hashingAlgorithm) {
         try {
-            final byte[] digest = MessageDigest.getInstance(HASHING_ALGORITHM).digest(bytes);
+            final byte[] digest = MessageDigest.getInstance(hashingAlgorithm).digest(bytes);
             return Base64.getEncoder().encodeToString(digest);
         } catch (NoSuchAlgorithmException ignored) {
-            log.error("Unknown hashing algorithm: " + HASHING_ALGORITHM);
+            log.error("Unknown hashing algorithm: " + hashingAlgorithm);
             return "";
         }
     }
