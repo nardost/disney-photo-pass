@@ -99,15 +99,16 @@ public class DisneyMediaRequestHandler {
          * for files smaller than 256K as they were not split into a flux of 1K chunks.
          */
         final StringBuilder mimeBuilder = new StringBuilder();
-        final Mono<DataBuffer> dataBuffer = DataBufferUtils.join(request.body(BodyExtractors.toParts())
-                .filter(part -> part instanceof FilePart)
-                .filter(part -> part.name().equals(FILE_FIELD_NAME))
-                .cast(FilePart.class)
-                .map(filePart -> {
-                    mimeBuilder.append(Objects.requireNonNullElse(filePart.headers().getContentType(), MediaType.IMAGE_JPEG).toString());
-                    return filePart;
-                })
-                .flatMap(FilePart::content)
+
+        final Mono<DataBuffer> dataBuffer = DataBufferUtils.join(
+                request.body(BodyExtractors.toParts())
+                        .filter(part -> part instanceof FilePart)
+                        .filter(part -> part.name().equals(FILE_FIELD_NAME))
+                        .cast(FilePart.class)
+                        .map(filePart -> {
+                            mimeBuilder.append(Objects.requireNonNullElse(filePart.headers().getContentType(), MediaType.IMAGE_JPEG).toString());
+                            return filePart;
+                        }).flatMap(FilePart::content)
         );
 
         return dataBuffer.flatMap(buffer -> {

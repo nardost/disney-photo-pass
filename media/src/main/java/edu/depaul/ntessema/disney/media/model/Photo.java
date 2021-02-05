@@ -46,9 +46,8 @@ public class Photo {
     }
 
     /**
-     * Utility method that generates a universally unique ID for photo objects
-     *
-     * @return a UUID
+     * Utility method that generates a universally unique ID for photo objects.
+     * @return a unique id.
      */
     private static String getUUID() {
         return UUID.randomUUID().toString().replace("-", "");
