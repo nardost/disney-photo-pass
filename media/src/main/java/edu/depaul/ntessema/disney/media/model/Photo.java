@@ -30,13 +30,6 @@ public class Photo {
     private String md5Hash;
     private Date timestamp;
 
-    /*
-     * Final members are not persisted. Use @Transient
-     * to make an instance variable non-persistent.
-     * https://docs.oracle.com/javaee/6/tutorial/doc/bnbqa.html
-     */
-    public static final String HASHING_ALGORITHM = "MD5";
-
     /**
      * A static factory method that creates a Photo instance.
      * @param bytes the byte array of the image file.
@@ -45,12 +38,28 @@ public class Photo {
      */
     public static Photo create(final byte[] bytes, final String mimeType) {
         return  new Photo(
-                UUID.randomUUID().toString().replace("-", ""),
+                Photo.getUUID(),
                 mimeType,
                 new Binary(BsonBinarySubType.BINARY, bytes),
                 Photo.getMessageDigest(bytes),
-                new Date());
+                new Date()); // TODO: explore why Timestamp causes a runtime exception
     }
+
+    /**
+     * Utility method that generates a universally unique ID for photo objects
+     *
+     * @return a UUID
+     */
+    private static String getUUID() {
+        return UUID.randomUUID().toString().replace("-", "");
+    }
+
+    /*
+     * Final members are not persisted. Use @Transient
+     * to make an instance variable non-persistent.
+     * https://docs.oracle.com/javaee/6/tutorial/doc/bnbqa.html
+     */
+    private static final String HASHING_ALGORITHM = "MD5";
 
     /**
      * Utility method that computes the md5 hash of image bytes.
@@ -58,12 +67,11 @@ public class Photo {
      * @return Base64 encoded md5 hash
      */
     private static String getMessageDigest(byte[] bytes) {
-        final String hashingAlgorithm = "MD5";
         try {
-            final byte[] digest = MessageDigest.getInstance(hashingAlgorithm).digest(bytes);
+            final byte[] digest = MessageDigest.getInstance(HASHING_ALGORITHM).digest(bytes);
             return Base64.getEncoder().encodeToString(digest);
         } catch (NoSuchAlgorithmException ignored) {
-            log.error("Unknown hashing algorithm: " + hashingAlgorithm);
+            log.error("Unknown hashing algorithm: " + HASHING_ALGORITHM);
             return "";
         }
     }
