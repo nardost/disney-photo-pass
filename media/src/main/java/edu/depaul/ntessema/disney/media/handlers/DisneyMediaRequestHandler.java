@@ -98,13 +98,13 @@ public class DisneyMediaRequestHandler {
          * 1K sized files which show as blank images when retrieved with browser/Postman. It worked
          * for files smaller than 256K as they were not split into a flux of 1K chunks.
          */
-        final StringBuilder mimeType = new StringBuilder();
+        final StringBuilder mimeBuilder = new StringBuilder();
         final Mono<DataBuffer> dataBuffer = DataBufferUtils.join(request.body(BodyExtractors.toParts())
                 .filter(part -> part instanceof FilePart)
                 .filter(part -> part.name().equals(FILE_FIELD_NAME))
                 .cast(FilePart.class)
                 .map(filePart -> {
-                    mimeType.append(Objects.requireNonNullElse(filePart.headers().getContentType(), MediaType.IMAGE_JPEG).toString());
+                    mimeBuilder.append(Objects.requireNonNullElse(filePart.headers().getContentType(), MediaType.IMAGE_JPEG).toString());
                     return filePart;
                 })
                 .flatMap(FilePart::content)
@@ -120,12 +120,7 @@ public class DisneyMediaRequestHandler {
              */
             DataBufferUtils.release(buffer.read(bytes));
 
-            final Photo photo = new Photo(
-                    UUID.randomUUID().toString().replace("-", ""),
-                    mimeType.toString(),
-                    new Binary(BsonBinarySubType.BINARY, bytes),
-                    getMessageDigest(bytes, Photo.HASHING_ALGORITHM),
-                    new Date()); //TODO: Investigate why Timestamp causes problems (MongoConverter problems...)
+            final Photo photo = Photo.create(bytes, mimeBuilder.toString());
 
             return ServerResponse.ok()
                     .contentType(MediaType.APPLICATION_JSON)
@@ -133,20 +128,4 @@ public class DisneyMediaRequestHandler {
                     .switchIfEmpty(errorHandler.handleHttpError(request, HttpStatus.NOT_FOUND));
         });
     }
-
-    /**
-     * Utility method that computes the md5 hash of image bytes.
-     * @param bytes the array of bytes of the image
-     * @return Base64 encoded md5 hash
-     */
-    private String getMessageDigest(byte[] bytes, final String hashingAlgorithm) {
-        try {
-            final byte[] digest = MessageDigest.getInstance(hashingAlgorithm).digest(bytes);
-            return Base64.getEncoder().encodeToString(digest);
-        } catch (NoSuchAlgorithmException ignored) {
-            log.error("Unknown hashing algorithm: " + hashingAlgorithm);
-            return "";
-        }
-    }
-
 }

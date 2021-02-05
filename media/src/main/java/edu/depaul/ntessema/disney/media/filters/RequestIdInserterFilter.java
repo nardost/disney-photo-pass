@@ -25,10 +25,10 @@ public class RequestIdInserterFilter implements WebFilter {
                 .header("x-request-id", requestId)
                 .build();
         /*
-         * MDC - Mapped Diagnostic Context for Slf4j
+         * MDC - Mapped Diagnostic Context for Slf4j.
          * Useful to filter log entries by requestId.
-         * Make sure to send the requestId within error responses
-         * so that the client can refer to failed requests by their id.
+         * Make sure to send the requestId with error responses so that
+         * the client can later refer to failed requests by their id.
          */
         MDC.put("requestId", requestId);
         return chain.filter(exchange);
